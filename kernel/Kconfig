@@ -143,7 +143,8 @@ config KSU_SUSFS_SUS_SU
     default y
     help
       - Allow user to enable or disable core ksu kprobes hooks temporarily in runtime. There are 2 modes for sus_su.
-      - Mode 1: when enabling sus_su, ksu kprobes will be disabled, and a fifo driver will be created in
+      - Mode 0: Disable sus_su, bring back ksu kprobe hooks for su.
+      - Mode 1: When enabling sus_su, ksu kprobes will be disabled, and a fifo driver will be created in
         /dev/[random_string] (for first time only), then user needs to mount the 'sus_su' to /system/bin/su using overlayfs or whatever
         techniques, and run 'su' to get root shell from the fifo driver. Or, refer to the method in service.sh from module template.
         ** sus_su userspace tool and an overlay mount is required **

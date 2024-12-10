@@ -524,7 +524,6 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 		return false;
 	}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
 	struct filename_trans_key key;
 	key.ttype = tgt->value;
 	key.tclass = cls->value;
@@ -532,13 +531,8 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 
 	struct filename_trans_datum *last = NULL;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	struct filename_trans_datum *trans =
 		policydb_filenametr_search(db, &key);
-#else
-	struct filename_trans_datum *trans =
-		hashtab_search(&db->filename_trans, &key);
-#endif
 	while (trans) {
 		if (ebitmap_get_bit(&trans->stypes, src->value - 1)) {
 			// Duplicate, overwrite existing data and return
@@ -624,7 +618,6 @@ static void *ksu_realloc(void *old, size_t new_size, size_t old_size)
 
 static bool add_type(struct policydb *db, const char *type_name, bool attr)
 {
-#ifdef KSU_SUPPORT_ADD_TYPE
 	struct type_datum *type = symtab_search(&db->p_types, type_name);
 	if (type) {
 		pr_warn("Type %s already exists\n", type_name);
@@ -654,7 +647,6 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 		return false;
 	}
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	struct ebitmap *new_type_attr_map_array =
 		ksu_realloc(db->type_attr_map_array,
 			    value * sizeof(struct ebitmap),
@@ -884,18 +876,7 @@ static bool set_type_state(struct policydb *db, const char *type_name,
 static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 				  struct type_datum *attr)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 	struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
-#elif defined(CONFIG_IS_HW_HISI)
-	/*
-   *   HISI_SELINUX_EBITMAP_RO is Huawei's unique features.
-   */
-	struct ebitmap *sattr = &db->type_attr_map[type->value - 1],
-		       HISI_SELINUX_EBITMAP_RO;
-#else
-	struct ebitmap *sattr =
-		flex_array_get(db->type_attr_map_array, type->value - 1);
-#endif
 	ebitmap_set_bit(sattr, attr->value - 1, 1);
 
 	struct hashtab_node *node;
